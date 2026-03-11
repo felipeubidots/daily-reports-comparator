@@ -1,21 +1,19 @@
 # Daily Report Comparator
 
-Compare developer daily reports from Slack (#dev-daily) with their Shortcut activity — using natural language in Claude Code.
+Compare developer daily reports from Slack (#dev-daily) with their Shortcut activity — using a slash command in Claude Code.
 
 ## How it works
 
-1. You ask: `Compare Cristian Arrieta's daily`
-2. Claude searches #dev-daily in Slack for today's message
-3. Claude queries Shortcut for that developer's story activity
+1. You run: `/daily Jane Smith`
+2. Claude searches #dev-daily in Slack for Jane's message today
+3. Claude queries Shortcut for her story activity
 4. Claude produces a structured comparison: shipped vs done, in-progress alignment, blockers, AI usage
 
-No scripts to run. No commands to type.
+No scripts. No manual API calls. Just a command.
 
 ---
 
 ## Prerequisites
-
-You need three things:
 
 ### 1. Claude Code
 Install the Claude Code CLI:
@@ -27,30 +25,30 @@ Or follow the [official installation guide](https://docs.anthropic.com/en/docs/c
 ### 2. Slack MCP configured
 Claude Code needs access to your Slack workspace via an MCP server.
 
-Add the Slack MCP to your Claude Code global config:
+Configure the Slack MCP globally in Claude Code:
 ```bash
-claude mcp add slack
+claude mcp add slack --scope user
 ```
 
 You'll need a **Slack Bot Token** (`xoxb-...`) with these scopes:
-- `channels:read`
 - `search:read`
+- `channels:read`
 - `users:read`
 
-Get your token at: https://api.slack.com/apps → OAuth & Permissions
+Get your token: https://api.slack.com/apps → OAuth & Permissions
 
 ### 3. Shortcut MCP configured
-Add the Shortcut MCP to your Claude Code global config:
+Configure the Shortcut MCP globally in Claude Code:
 ```bash
-claude mcp add shortcut
+claude mcp add shortcut --scope user
 ```
 
 You'll need a **Shortcut API Token**.
 
-Get your token at: https://app.shortcut.com/settings/account/api-tokens
+Get your token: https://app.shortcut.com/settings/account/api-tokens
 
-> **Important:** Configure MCPs globally (not per-project) so they work in any directory.
-> See the [Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp) for full setup instructions.
+> Configure MCPs with `--scope user` so they work across all your projects.
+> See the [Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp) for full setup details.
 
 ---
 
@@ -61,34 +59,46 @@ git clone https://github.com/felipeubidots/daily-reports-comparator.git
 cd daily-reports-comparator
 ```
 
-That's it. No `npm install` needed for the primary Claude Code workflow.
+That's it. The `/daily` skill is included in the repo and available immediately in Claude Code.
 
 ---
 
 ## Usage
 
-Open Claude Code in this directory and ask in natural language:
+Open Claude Code in this directory and run:
 
 ```
-Compare Juan Agudelo's daily
-Compare Cristian Arrieta's daily
-Compare gajaguar's daily
-Compare cristian.arrieta@ubidots.com's daily
+/daily Jane Smith
+/daily jsmith
+/daily jane.smith@yourcompany.com
 ```
 
-Claude reads `CLAUDE.md` automatically when you open this directory, which gives it all the context it needs to run the comparison.
+The `/daily` skill is defined in `.claude/skills/daily/SKILL.md` and is automatically available to anyone who clones this repo and opens it in Claude Code.
 
-### Finding the right identifier
+### Identifier formats
 
-| Method | Example | Notes |
+| Format | Example | Notes |
 |--------|---------|-------|
-| Full name | `Cristian Arrieta` | Easiest to type |
-| Slack username | `gajaguar` | Most reliable |
-| Email | `gerardo@ubidots.com` | Use for names with accents/special chars |
+| Full name | `/daily Jane Smith` | Easiest to type |
+| Slack username | `/daily jsmith` | Most reliable |
+| Email | `/daily jane@yourcompany.com` | Use for names with accents or special characters |
+
+---
+
+## Adapting to your team
+
+This tool uses two files to resolve developer identities:
+
+- `people-context.json` — machine-readable (usernames, emails, roles, teams)
+- `TEAM.md` — human-readable team documentation
+
+Update both files with your team members before using. When team structure changes, update them together.
 
 ---
 
 ## Expected daily format in Slack (#dev-daily)
+
+Your team's daily messages in #dev-daily should follow this structure:
 
 ```
 ✅ SHIPPED   [Completed work] — [AI-assisted / Manual] — [link]
@@ -104,30 +114,19 @@ Claude reads `CLAUDE.md` automatically when you open this directory, which gives
 | **IN PROGRESS** | Active work + current status (%, waiting on review, etc.) |
 | **TODAY** | Top priorities for the day |
 | **BLOCKERS** | What's blocking + owner + severity (🔴 critical / 🟡 high / 🟢 medium) |
-| **AI INSIGHT** | Only if you actually used AI tools (Claude, Copilot, etc.) |
+| **AI INSIGHT** | Only if you actually used AI tools |
 
 ---
 
 ## Alternative: command line (optional)
 
-If you prefer not to use Claude Code, you can run the script directly after setting up tokens:
+If you prefer not to use Claude Code:
 
 ```bash
 cp .env.example .env
 # Edit .env with your actual tokens
 node index.js "Developer Name"
 ```
-
----
-
-## Team context
-
-Team member data lives in two files:
-
-- `people-context.json` — machine-readable (usernames, emails, roles, teams)
-- `TEAM.md` — human-readable documentation
-
-When team structure changes, update both files together.
 
 ---
 
