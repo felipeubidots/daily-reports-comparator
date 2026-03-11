@@ -3,15 +3,29 @@
 /**
  * Daily Report Comparator
  * Compares developer's daily report in #dev-daily with their Shortcut activity
+ * Integrates team context from people-context.json for role-aware analysis
  * Usage: node index.js "Developer Name"
  */
 
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 // Configuration
 const SLACK_TOKEN = process.env.SLACK_TOKEN;
 const SHORTCUT_TOKEN = process.env.SHORTCUT_TOKEN;
 const DEV_DAILY_CHANNEL = 'dev-daily';
+
+// Load team context
+let teamContext = {};
+try {
+  const contextPath = path.join(__dirname, 'people-context.json');
+  if (fs.existsSync(contextPath)) {
+    teamContext = JSON.parse(fs.readFileSync(contextPath, 'utf8'));
+  }
+} catch (e) {
+  console.warn('⚠️  Warning: Could not load people-context.json - proceeding without team context');
+}
 
 if (!process.argv[2]) {
   console.error('❌ Usage: node index.js "Developer Name"');
@@ -184,6 +198,31 @@ async function getChannelId(channelName) {
 }
 
 /**
+ * Find developer in team context (by name, email, or username)
+ */
+function findDeveloperInContext(identifier) {
+  if (!teamContext.people) return null;
+
+  const id = identifier.toLowerCase();
+
+  // Try exact email match
+  let person = teamContext.people.find(p => p.email?.toLowerCase() === id);
+  if (person) return person;
+
+  // Try exact username match
+  person = teamContext.people.find(p => p.username?.toLowerCase() === id);
+  if (person) return person;
+
+  // Try name match
+  person = teamContext.people.find(p =>
+    p.name?.toLowerCase().includes(id) ||
+    id.includes(p.name?.toLowerCase())
+  );
+
+  return person || null;
+}
+
+/**
  * Get user ID from display name
  */
 async function getUserIdByName(name) {
@@ -204,6 +243,34 @@ async function getUserIdByName(name) {
   }
 
   return user?.id;
+}
+
+/**
+ * Format developer context header
+ */
+function formatDeveloperContext(person) {
+  if (!person) return '';
+
+  let output = `\n👤 DEVELOPER CONTEXT\n`;
+  output += `   ─────────────────────────────────────\n`;
+  output += `   Name: ${person.name}\n`;
+  output += `   Role: ${person.role}\n`;
+  output += `   Seniority: ${person.seniority?.toUpperCase() || 'UNKNOWN'}\n`;
+  output += `   Teams: ${person.teams?.join(', ') || 'N/A'}\n`;
+  output += `   Expected focus: ${person.focus_areas?.join(', ') || 'N/A'}\n`;
+
+  if (person.technical_lead_for) {
+    output += `   🔹 Technical Lead for: ${person.technical_lead_for}\n`;
+  }
+  if (person.dual_role) {
+    output += `   🔹 Dual role: ${person.dual_role}\n`;
+  }
+  if (person.specialty) {
+    output += `   🔹 Specialty: ${person.specialty}\n`;
+  }
+
+  output += '\n';
+  return output;
 }
 
 /**
@@ -291,6 +358,13 @@ async function main() {
     const latestMessage = userMessages[0];
     const daily = parseDaily(latestMessage.text);
 
+    // Load developer context
+    const developerContext = findDeveloperInContext(developerName);
+
+    if (developerContext) {
+      console.log(formatDeveloperContext(developerContext));
+    }
+
     console.log(formatDaily(daily));
 
     // Get Shortcut data
@@ -335,6 +409,7 @@ async function main() {
     // DEEP ANALYSIS FOR DECISION-MAKING
     console.log('\n\n📊 ANALYSIS FOR SCRUM MASTERS & TECH LEADS:\n');
 
+    // Store developer context for analysis
     const shippedCount = daily.shipped.length;
     const completedCount = completed.length;
     const aiAssistedCount = daily.shipped.filter(s => s.metadata.aiAssisted).length;
@@ -361,8 +436,83 @@ async function main() {
       console.log(`   Recommendation: Add missing items or exclude from daily`);
     }
 
-    // 2. ESTIMATION ACCURACY
-    console.log(`\n2️⃣ ESTIMATION ACCURACY - Story Point Reliability`);
+    // 2. FOCUS AREA ALIGNMENT
+    if (developerContext && developerContext.focus_areas) {
+      console.log(`\n2️⃣ FOCUS AREA ALIGNMENT - Role Expectations`);
+      console.log('   ──────────────────────────────────────────');
+
+      const focusAreas = developerContext.focus_areas || [];
+      let alignmentScore = 100;
+      let alignedItems = 0;
+
+      // Check if shipped items match expected focus areas
+      daily.shipped.forEach(item => {
+        const itemDesc = item.description.toLowerCase();
+        const isAligned = focusAreas.some(area =>
+          itemDesc.includes(area.toLowerCase())
+        );
+        if (isAligned) alignedItems++;
+      });
+
+      const alignmentPercent = shippedCount > 0 ? (alignedItems / shippedCount * 100).toFixed(0) : 100;
+
+      console.log(`   Expected focus: ${focusAreas.join(', ')}`);
+      console.log(`   Work alignment: ${alignedItems}/${shippedCount} items match focus areas (${alignmentPercent}%)`);
+
+      if (alignmentPercent >= 80) {
+        console.log(`   Assessment: ✅ EXCELLENT - Work aligned with role expectations`);
+      } else if (alignmentPercent >= 50) {
+        console.log(`   Assessment: ⚠️ PARTIAL - Some work outside primary focus`);
+        console.log(`   Note: May indicate support work or context switching`);
+      } else if (shippedCount > 0) {
+        console.log(`   Assessment: 🔄 OFF-FOCUS - Work doesn't match role expectations`);
+        console.log(`   Action: Clarify priorities with team lead`);
+      }
+    }
+
+    // 3. SENIORITY-BASED EXPECTATIONS
+    if (developerContext) {
+      console.log(`\n3️⃣ SENIORITY-BASED EXPECTATIONS`);
+      console.log('   ──────────────────────────────────────');
+
+      const seniority = developerContext.seniority || 'unknown';
+      let expectedItemsMin, expectedItemsMax, expectedContext;
+
+      if (seniority === 'principal') {
+        expectedItemsMin = 3;
+        expectedItemsMax = 8;
+        expectedContext = 'Principal engineers focus on architecture & strategic work';
+      } else if (seniority === 'senior') {
+        expectedItemsMin = 3;
+        expectedItemsMax = 6;
+        expectedContext = 'Senior engineers balance delivery with mentoring & technical decisions';
+      } else if (seniority === 'semisenior') {
+        expectedItemsMin = 2;
+        expectedItemsMax = 5;
+        expectedContext = 'Semi-senior engineers should show consistent delivery';
+      } else if (seniority === 'junior') {
+        expectedItemsMin = 1;
+        expectedItemsMax = 4;
+        expectedContext = 'Junior engineers focus on learning & steady progress';
+      }
+
+      console.log(`   Seniority: ${seniority?.toUpperCase()}`);
+      console.log(`   ${expectedContext}`);
+      console.log(`   Expected items/day: ${expectedItemsMin}-${expectedItemsMax} | Actual: ${shippedCount}`);
+
+      if (shippedCount >= expectedItemsMin && shippedCount <= expectedItemsMax) {
+        console.log(`   Assessment: ✅ ON TRACK - Meets seniority expectations`);
+      } else if (shippedCount > expectedItemsMax) {
+        console.log(`   Assessment: 🚀 EXCEEDING - Shipping more than expected for seniority level`);
+        console.log(`   Note: Good, but watch for quality or burnout`);
+      } else if (shippedCount > 0) {
+        console.log(`   Assessment: ⚠️ BELOW EXPECTATIONS - Less output than typical for ${seniority}`);
+        console.log(`   Possible causes: blockers, learning curve, complexity`);
+      }
+    }
+
+    // 4. ESTIMATION ACCURACY
+    console.log(`\n4️⃣ ESTIMATION ACCURACY - Story Point Reliability`);
     console.log('   ──────────────────────────────────────────────');
     const totalPoints = completed.reduce((sum, s) => sum + (s.story_points || 0), 0);
     const avgPoints = completedCount > 0 ? totalPoints / completedCount : 0;
@@ -379,8 +529,8 @@ async function main() {
       }
     }
 
-    // 3. CAPACITY vs COMMITMENT
-    console.log(`\n3️⃣ CAPACITY vs COMMITMENT - Delivery Index`);
+    // 5. CAPACITY vs COMMITMENT
+    console.log(`\n5️⃣ CAPACITY vs COMMITMENT - Delivery Index`);
     console.log('   ─────────────────────────────────────────');
     const totalDelivered = shippedCount + inProgressDaily;
     const deliveryIndex = plannedToday > 0 ? (totalDelivered / plannedToday * 100).toFixed(0) : 0;
@@ -402,8 +552,8 @@ async function main() {
       console.log(`   Action: INVESTIGATE - blockers? estimation issues? capacity?`);
     }
 
-    // 4. BLOCKER IMPACT
-    console.log(`\n4️⃣ BLOCKER ANALYSIS - Risk to Sprint`);
+    // 6. BLOCKER IMPACT
+    console.log(`\n6️⃣ BLOCKER ANALYSIS - Risk to Sprint`);
     console.log('   ──────────────────────────────────────');
 
     if (daily.blockers.length === 0) {
@@ -437,8 +587,8 @@ async function main() {
       }
     }
 
-    // 5. AI & TOOLING
-    console.log(`\n5️⃣ AI & TOOL ADOPTION - Innovation Metrics`);
+    // 7. AI & TOOLING
+    console.log(`\n7️⃣ AI & TOOL ADOPTION - Innovation Metrics`);
     console.log('   ──────────────────────────────────────');
 
     const aiPercentage = shippedCount > 0 ? (aiAssistedCount / shippedCount * 100).toFixed(0) : 0;
@@ -462,8 +612,8 @@ async function main() {
       });
     }
 
-    // 6. IN-PROGRESS ALIGNMENT
-    console.log(`\n6️⃣ PROGRESS TRACKING - Daily vs Shortcut Alignment`);
+    // 8. IN-PROGRESS ALIGNMENT
+    console.log(`\n8️⃣ PROGRESS TRACKING - Daily vs Shortcut Alignment`);
     console.log('   ───────────────────────────────────────────────');
 
     if (inProgressDaily === inProgressShortcut) {
@@ -478,8 +628,8 @@ async function main() {
       console.log(`   Action: Sync Shortcut before next standup`);
     }
 
-    // 7. OVERALL HEALTH SCORE
-    console.log(`\n7️⃣ DEVELOPER HEALTH SCORE`);
+    // 9. OVERALL HEALTH SCORE
+    console.log(`\n9️⃣ DEVELOPER HEALTH SCORE`);
     console.log('   ──────────────────────────────────────');
 
     let healthScore = 100;
@@ -504,8 +654,8 @@ async function main() {
       console.log(`   Action: IMMEDIATE 1-on-1 required`);
     }
 
-    // 8. ACTIONABLE RECOMMENDATIONS
-    console.log(`\n8️⃣ RECOMMENDATIONS FOR ACTION`);
+    // 10. ACTIONABLE RECOMMENDATIONS
+    console.log(`\n🔟 RECOMMENDATIONS FOR ACTION`);
     console.log('   ────────────────────────────────────────');
 
     const actions = [];
@@ -525,8 +675,8 @@ async function main() {
       });
     }
 
-    // 9. TREND TRACKING
-    console.log(`\n9️⃣ METRICS FOR TRACKING OVER TIME`);
+    // 11. TREND TRACKING
+    console.log(`\n1️⃣1️⃣ METRICS FOR TRACKING OVER TIME`);
     console.log('   ────────────────────────────────────');
     console.log(`   Delivery Index: ${deliveryIndex}%`);
     console.log(`   Blocker Count: ${daily.blockers.length}`);
