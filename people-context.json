@@ -1,0 +1,211 @@
+{
+  "teams": [
+    {
+      "id": "backend",
+      "name": "Backend",
+      "lead": "woakas",
+      "description": "API Development, Database, Performance"
+    },
+    {
+      "id": "frontend",
+      "name": "Frontend",
+      "lead": null,
+      "description": "UI Components, State Management, Performance"
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "lead": "woakas",
+      "description": "Infrastructure, Deployment, CI/CD"
+    },
+    {
+      "id": "product",
+      "name": "Product",
+      "lead": "isabel.lopez",
+      "description": "Product Strategy, Requirements"
+    },
+    {
+      "id": "design",
+      "name": "Design",
+      "lead": "maryan.gonzalez",
+      "description": "UX/UI Design, Design Systems"
+    }
+  ],
+  "people": [
+    {
+      "id": "juan.agudelo",
+      "name": "Juan Agudelo",
+      "username": "juan.agudelo",
+      "email": "juan.agudelo@ubidots.com",
+      "role": "Backend Engineer / DevOps Engineer",
+      "teams": ["backend", "devops"],
+      "seniority": "senior",
+      "focus_areas": ["API Development", "Infrastructure", "Deployment"]
+    },
+    {
+      "id": "gajaguar",
+      "name": "Gerardo Gerónimo",
+      "username": "gajaguar",
+      "email": "gerardo.geronimo@ubidots.com",
+      "role": "Senior Backend Engineer",
+      "teams": ["backend"],
+      "seniority": "senior",
+      "focus_areas": ["API Development", "Database Optimization", "Refactoring", "Technical Documentation"],
+      "specialty": "Backend Specifications & Architecture",
+      "notes": "Creates technical specifications and documentation for backend systems"
+    },
+    {
+      "id": "gustabot",
+      "name": "Gustavo Díaz",
+      "username": "gustabot",
+      "email": "gustavo.diaz@ubidots.com",
+      "role": "Senior Backend Engineer",
+      "teams": ["backend"],
+      "seniority": "senior",
+      "focus_areas": ["API Development", "Database", "Testing"]
+    },
+    {
+      "id": "cristian.rubio",
+      "name": "Cristian Rubio",
+      "username": "cristian.rubio",
+      "email": "cristian.rubio@ubidots.com",
+      "role": "Semi-Senior Backend Engineer",
+      "teams": ["backend"],
+      "seniority": "semisenior",
+      "focus_areas": ["API Development", "Performance Optimization", "Testing"]
+    },
+    {
+      "id": "juan.david.tangarife",
+      "name": "Juan David Tangarife",
+      "username": "juan.david.tangarife",
+      "email": "juan.david.tangarife@ubidots.com",
+      "role": "Junior Backend Engineer",
+      "teams": ["backend"],
+      "seniority": "junior",
+      "focus_areas": ["API Development", "Bug Fixes", "Testing", "IoT Integration"],
+      "dual_role": "IoT Engineer (Customer Success)",
+      "notes": "Dual role: Backend developer + IoT Engineer supporting Customer Success team"
+    },
+    {
+      "id": "woakas",
+      "name": "Gustavo Angulo",
+      "username": "woakas",
+      "email": "gustavo.angulo@ubidots.com",
+      "role": "CTO / Backend Engineer / DevOps Engineer",
+      "teams": ["backend", "devops"],
+      "seniority": "principal",
+      "focus_areas": ["Architecture", "Infrastructure", "API Development", "Technical Leadership"]
+    },
+    {
+      "id": "cristianarrieta",
+      "name": "Cristian Arrieta",
+      "username": "cristianarrieta",
+      "email": "cristian.arrieta@ubidots.com",
+      "role": "Frontend Tech Lead",
+      "teams": ["frontend"],
+      "seniority": "senior",
+      "focus_areas": ["UI Components", "State Management", "Performance", "Technical Leadership"]
+    },
+    {
+      "id": "christian.elias",
+      "name": "Christian Elías Cruz",
+      "username": "elias",
+      "email": "christian.elias@ubidots.com",
+      "role": "Semi-Senior Frontend Engineer",
+      "teams": ["frontend"],
+      "seniority": "semisenior",
+      "focus_areas": ["UI Development", "React", "Testing", "Technical Documentation"],
+      "specialty": "Frontend Specifications & Documentation",
+      "notes": "Supporting Cristian Arrieta in creating frontend technical specs and documentation"
+    },
+    {
+      "id": "angelo.zambrano",
+      "name": "Angelo Zambrano",
+      "username": "angelo.zambrano",
+      "email": "angelo.zambrano@ubidots.com",
+      "role": "Senior Frontend Engineer",
+      "teams": ["frontend"],
+      "seniority": "senior",
+      "focus_areas": ["UI Development", "Performance", "Accessibility", "Mobile Development"],
+      "technical_lead_for": "Mobile Team",
+      "notes": "Mobile Team Lead - Makes technical decisions for mobile app"
+    },
+    {
+      "id": "harpeblue",
+      "name": "Harold Peñaloza",
+      "username": "harpeblue",
+      "email": "harold.penaloza@ubidots.com",
+      "role": "Semi-Senior Frontend Engineer",
+      "teams": ["frontend"],
+      "seniority": "semisenior",
+      "focus_areas": ["UI Development", "Testing", "Documentation"]
+    },
+    {
+      "id": "brian.florez",
+      "name": "Brian Florez",
+      "username": "brian.florez",
+      "email": "brian.florez@ubidots.com",
+      "role": "Senior Frontend Engineer",
+      "teams": ["frontend"],
+      "seniority": "senior",
+      "focus_areas": ["UI Development", "Bug Fixes", "Performance", "Mobile Development"],
+      "specialty": "Mobile App Support",
+      "notes": "Supporting mobile app development under Angelo's technical leadership"
+    },
+    {
+      "id": "ricardo.rito",
+      "name": "Ricardo Rito",
+      "username": "ricardo.rito",
+      "email": "ricardo.rito@ubidots.com",
+      "role": "Senior Frontend Engineer / Fullstack",
+      "teams": ["frontend"],
+      "seniority": "senior",
+      "focus_areas": ["UI Development", "React", "Backend API", "Fullstack Integration"],
+      "notes": "Transitioning to fullstack"
+    },
+    {
+      "id": "robin.romero",
+      "name": "Robin Romero",
+      "username": "robin.romero",
+      "email": "robin.romero@ubidots.com",
+      "role": "Semi-Senior Frontend Engineer",
+      "teams": ["frontend"],
+      "seniority": "semisenior",
+      "focus_areas": ["UI Development", "Component Development", "Testing"]
+    },
+    {
+      "id": "isabel.lopez",
+      "name": "Isabel López",
+      "username": "isabel.lopez",
+      "email": "isabel.lopez@ubidots.com",
+      "role": "Senior Product Owner",
+      "teams": ["product"],
+      "seniority": "senior",
+      "focus_areas": ["Product Strategy", "Requirements", "Stakeholder Management", "QA Testing"],
+      "dual_role": "QA (Quality Assurance)",
+      "notes": "Dual role: Product Owner + QA Testing"
+    },
+    {
+      "id": "maryan.gonzalez",
+      "name": "Maryan González",
+      "username": "maryan.gonzalez",
+      "email": "maryan.gonzalez@ubidots.com",
+      "role": "Senior UX/UI Designer",
+      "teams": ["design"],
+      "seniority": "senior",
+      "focus_areas": ["UX Design", "UI Design", "Design Systems"]
+    },
+    {
+      "id": "felipe.moreno",
+      "name": "Felipe Moreno",
+      "username": "felipemoreno5879",
+      "email": "felipe.moreno@ubidots.com",
+      "role": "Project Manager / Scrum Master",
+      "teams": ["management"],
+      "seniority": "senior",
+      "focus_areas": ["Project Management", "Sprint Planning", "QA Testing", "Process Improvement"],
+      "dual_role": "QA Support",
+      "notes": "Dual role: Project Manager/Scrum Master + QA support"
+    }
+  ]
+}
