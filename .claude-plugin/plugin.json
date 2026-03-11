@@ -1,0 +1,4 @@
+{
+  "name": "daily-reports-comparator",
+  "description": "Compare developer daily reports from Slack #dev-daily against Shortcut activity, with role-aware analysis using team context"
+}

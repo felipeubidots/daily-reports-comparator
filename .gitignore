@@ -1,0 +1,26 @@
+# Environment variables - NEVER commit tokens
+.env
+.env.local
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs / temp / cache
+logs/
+*.log
+tmp/
+.cache/
+
+# Claude local settings
+.claude/
